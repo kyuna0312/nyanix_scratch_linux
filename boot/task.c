@@ -1,24 +1,15 @@
 #include "graphics.h"
 
+<<<<<<< Updated upstream
 int DesktopTask(int taskId);
 int ClockTask(int taskId);
 
 int TasksLength = 0;
+=======
+int DemoTask(int taskId);
 
-#define task_type_void 0
-#define task_type_string_buffer 1
-#define task_params_length 10
-
-struct Task {
-    // 0 to 5 with zero being the highest priority
-    int priority;
-    int taskId;
-    char ca1[100];
-    int i1;
-
-    // Function pointers
-    int (*function)(int);
-};
+int TasksLength = 0;
+>>>>>>> Stashed changes
 
 struct Task tasks[256];
 int iparams[100] = {10};
@@ -224,7 +215,7 @@ int TaskbarTask(int taskId) {
 
     int i = iparams[taskId * task_params_length + 4];
 
-    char text[] = "Shell\0";
+    char text[] = "Shell";
     if (DrawButton(0, 0, 50, 40, 0, 10, 16, text, 16, 32, 16, taskId) == TRUE) {
         tasks[TasksLength].priority = 0;
         tasks[TasksLength].taskId = TasksLength;
@@ -240,7 +231,7 @@ int TaskbarTask(int taskId) {
         iparams[taskId * task_params_length + 4]++;
     }
 
-    char text2[] = "Ball\0";
+    char text2[] = "Ball";
     if (DrawButton(50, 0, 50, 40, 16, 10, 0, text, 16, 32, 16, taskId) == TRUE) {
         tasks[TasksLength].priority = 0;
         tasks[TasksLength].taskId = TasksLength;
@@ -256,4 +247,65 @@ int TaskbarTask(int taskId) {
         iparams[TasksLength * task_params_length + 8] = 5;
         TasksLength++;
     }
+    
+    char text3[] = "Demo";
+    if (DrawButton(100, 0, 50, 40, 16, 10, 0, text3, 16, 32, 16, taskId) == TRUE) {
+        tasks[TasksLength].priority = 0;
+        tasks[TasksLength].taskId = TasksLength;
+        tasks[TasksLength].function = &DemoTask;
+        iparams[TasksLength * task_params_length + 0] = i * 40;
+        iparams[TasksLength * task_params_length + 1] = i * 40;
+        iparams[TasksLength * task_params_length + 2] = 400;
+        iparams[TasksLength * task_params_length + 3] = 300;
+        iparams[TasksLength * task_params_length + 4] = 0;
+        iparams[TasksLength * task_params_length + 5] = 50;
+        TasksLength++;
+    }
+}
+
+int DemoTask(int taskId) {
+    int x = iparams[taskId * task_params_length + 0];
+    int y = iparams[taskId * task_params_length + 1];
+    int width = iparams[taskId * task_params_length + 2];
+    int height = iparams[taskId * task_params_length + 3];
+    
+    int closeClicked = DrawWindow(&x, &y, &width, &height, 16, 16, 16, &iparams[taskId * task_params_length + 9], taskId);
+    if (closeClicked == TRUE)
+        CloseTask(taskId);
+    
+    DrawRect(x + 10, y + 30, 150, 25, 4, 4, 4);
+    static char inputText[] = "Hello World";
+    static int cursorPos = 10;
+    if (DrawTextInput(x + 10, y + 30, 150, 25, inputText, &cursorPos, 0, 10, 0, taskId) == TRUE) {
+    }
+    
+    static int checked1 = 0;
+    static int checked2 = 0;
+    if (DrawCheckbox(x + 10, y + 60, &checked1, "Checkbox 1", taskId) == TRUE) {
+    }
+    if (DrawCheckbox(x + 10, y + 80, &checked2, "Checkbox 2", taskId) == TRUE) {
+    }
+    
+    static int radioVal = 1;
+    if (DrawRadioButton(x + 10, y + 105, &radioVal, 1, "Option 1", taskId) == TRUE) {
+    }
+    if (DrawRadioButton(x + 10, y + 125, &radioVal, 2, "Option 2", taskId) == TRUE) {
+    }
+    
+    static int sliderVal = 50;
+    DrawSlider(x + 10, y + 150, 150, &sliderVal, 0, 100, taskId);
+    char sliderText[] = "Value: 50";
+    sliderText[8] = '0' + (sliderVal / 10) % 10;
+    sliderText[9] = '0' + sliderVal % 10;
+    DrawString(getArialCharacter, font_arial_width, font_arial_height, sliderText, x + 170, y + 145, 16, 32, 16);
+    
+    static int selectedIdx = 0;
+    static int scrollIdx = 0;
+    struct FileEntry files[5];
+    files[0].name[0] = 'd'; files[0].name[1] = 'o'; files[0].name[2] = 'c'; files[0].name[3] = 's'; files[0].name[4] = '\0'; files[0].isDirectory = 1;
+    files[1].name[0] = 'd'; files[1].name[1] = 'o'; files[1].name[2] = 'c'; files[1].name[3] = 's'; files[1].name[4] = '2'; files[1].name[5] = '\0'; files[1].isDirectory = 1;
+    files[2].name[0] = 'r'; files[2].name[1] = 'e'; files[2].name[2] = 'a'; files[2].name[3] = 'd'; files[2].name[4] = 'm'; files[2].name[5] = 'e'; files[2].name[6] = '.'; files[2].name[7] = 't'; files[2].name[8] = 'x'; files[2].name[9] = 't'; files[2].name[10] = '\0'; files[2].isDirectory = 0;
+    files[3].name[0] = 's'; files[3].name[1] = 'o'; files[3].name[2] = 'u'; files[3].name[3] = 'r'; files[3].name[4] = 'c'; files[3].name[5] = 'e'; files[3].name[6] = '.'; files[3].name[7] = 'c'; files[3].name[8] = '\0'; files[3].isDirectory = 0;
+    files[4].name[0] = 'd'; files[4].name[1] = 'a'; files[4].name[2] = 't'; files[4].name[3] = 'a'; files[4].name[4] = '.'; files[4].name[5] = 'b'; files[4].name[6] = 'i'; files[4].name[7] = 'n'; files[4].name[8] = '\0'; files[4].isDirectory = 0;
+    DrawFileBrowser(x + 10, y + 170, 180, 100, &selectedIdx, &scrollIdx, 5, taskId);
 }

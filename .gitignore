@@ -1,2 +1,7 @@
-bin
-lst
+boot/bin/
+os.img
+os.img.lock
+*.o
+*.elf
+CLAUDE.md
+docs/

@@ -86,7 +86,7 @@ void InitialiseIDT() {
 
     RemapPIC();
 
-    outportb(0x21, 0b11111001);
+    outportb(0x21, 0b11111000);
     outportb(0xa1, 0x00);
 
     LoadIDT();

@@ -1,3 +1,8 @@
+#include "graphics.h"
+
+int DesktopTask(int taskId);
+int ClockTask(int taskId);
+
 int TasksLength = 0;
 
 #define task_type_void 0
@@ -74,7 +79,31 @@ void CloseTask(int taskId) {
 
 int ClearScreenTask(int taskId) {
     ClearScreen(181.0f / 255.0f * 16.0f, 232.0f / 255.0f * 32.0f, 255.0f / 255.0f * 16.0f);
+    return 0;
+}
+
+int DesktopTask(int taskId) {
+    VBEInfoBlock* VBE = (VBEInfoBlock*) VBEInfoAddress;
+    DrawRect(0, 40, VBE->x_resolution, VBE->y_resolution - 40, 8, 12, 16);
+    DrawRect(0, VBE->y_resolution - 2, VBE->x_resolution, 2, 4, 4, 4);
+    return 0;
+}
+
+int ClockTask(int taskId) {
+    VBEInfoBlock* VBE = (VBEInfoBlock*) VBEInfoAddress;
+    int hours = pit_ticks / 3600;
+    int mins = (pit_ticks % 3600) / 60;
+    int secs = pit_ticks % 60;
     
+    char timeStr[] = "00:00:00";
+    timeStr[0] = '0' + (hours / 10);
+    timeStr[1] = '0' + (hours % 10);
+    timeStr[3] = '0' + (mins / 10);
+    timeStr[4] = '0' + (mins % 10);
+    timeStr[6] = '0' + (secs / 10);
+    timeStr[7] = '0' + (secs % 10);
+    
+    DrawString(getArialCharacter, font_arial_width, font_arial_height, timeStr, VBE->x_resolution - 70, 12, 16, 32, 16);
     return 0;
 }
 

@@ -3,7 +3,8 @@ os.img
 os.img.lock
 *.o
 *.elf
-CLAUDE.md
-docs/
-.vscode/
-AGENTS.md
+.DS_Store
+*.bak
+*_backup
+*_new
+*.original

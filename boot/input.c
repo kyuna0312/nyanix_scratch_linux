@@ -1,5 +1,6 @@
 
 #include <stdint.h>
+#include "graphics.h"
 
 int mx, my;
 int left_clicked, right_clicked, middle_clicked;

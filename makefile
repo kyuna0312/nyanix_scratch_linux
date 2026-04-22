@@ -1,6 +1,6 @@
 BIN = boot/bin
-LOADER_SRC = boot/loader
-KERNEL_SRC = boot/kernel
+LOADER_SRC = boot
+KERNEL_SRC = boot
 
 .PHONY: all run clean
 

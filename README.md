@@ -1,45 +1,37 @@
 # Nyanix — SaphireOS
 
-Bare-metal x86 OS built from scratch. Boots from a custom MBR, runs in VBE 640×480 16bpp (RGB565), and drives a cooperative task scheduler with PS/2 mouse + keyboard input. No libc, no OS abstractions.
-
-Built for learning low-level systems: bootloaders, VBE graphics, IDT/ISR wiring, and cooperative multitasking.
+Bare-metal x86 OS built from scratch. Boots from MBR, runs VBE 640×480 16bpp (RGB565), with cooperative multitasking and PS/2 mouse/keyboard input. No libc.
 
 ---
 
 ## Quick Start
 
 ```bash
-# 1. Install dependencies (Arch/Manjaro)
-./scripts/setup.sh
+# Build
+./build.sh
 
-# 2. Build
-./scripts/build.sh
-
-# 3. Run in QEMU
-./scripts/run.sh
-
-# Or with make
-make
-make run
+# Run in QEMU
+./run.sh
 ```
 
 ---
 
-## What It Does Right Now
+## Features
 
 | Feature | Status |
-|---|---|
-| MBR bootloader | done |
-| VBE 640×480 16bpp framebuffer | done |
-| Off-screen buffer + `Flush()` | done |
-| Custom Arial bitmap font renderer | done |
-| PS/2 keyboard (IDT IRQ1) | done |
-| PS/2 mouse (IDT IRQ12) | done |
-| Cooperative task scheduler (priority 0–5) | done |
-| PIT at ~100 Hz for frame pacing | done |
-| Draggable windows with title bar + close button | done |
-| Hover/click buttons scoped to focused task | done |
-| Taskbar | done |
+|---------|---------|
+| MBR bootloader | ✅ |
+| VBE 640×480 16bpp | ✅ |
+| Off-screen buffer + Flush() | ✅ |
+| Custom bitmap font renderer | ✅ |
+| PS/2 keyboard (IDT IRQ1) | ✅ |
+| PS/2 mouse (IDT IRQ12) | ✅ |
+| Cooperative task scheduler | ✅ |
+| PIT at ~100 Hz | ✅ |
+| Draggable windows | ✅ |
+| Buttons (hover/click) | ✅ |
+| Taskbar with clock | ✅ |
+| Desktop background | ✅ |
 
 ---
 
@@ -48,87 +40,84 @@ make run
 ```
 nyanix_scratch_linux/
 ├── boot/
-│   ├── boot.asm             # MBR bootloader — sets up VBE, loads kernel
-│   ├── kernel_entry.asm     # 32-bit entry point, calls start()
-│   ├── final.c              # Root compilation unit — #includes all .c in order
-│   ├── graphics.c / .h      # Draw(), DrawRect(), DrawString(), Flush()
-│   ├── font.c               # Bitmap Arial font data + getArialCharacter()
-│   ├── input.c              # IDT setup, keyboard/mouse ISRs, PIT init
-│   ├── graphics_elements.c  # DrawWindow(), DrawButton(), DrawTaskbar()
-│   ├── task.c               # Task struct, ProcessTasks() scheduler
-│   ├── main.c               # start() — task registration + main loop
-│   ├── bin/                 # Build artifacts (gitignored)
-│   └── utilities/           # Font generation tools
-├── scripts/
-│   ├── setup.sh             # Install deps via pacman
-│   ├── build.sh             # Full build pipeline
-│   └── run.sh               # Stale-check build + launch QEMU
-├── makefile
-└── os.img                   # Final bootable image (gitignored)
+│   ├── boot.asm           # MBR bootloader
+│   ├── kernel_entry.asm  # 32-bit entry point
+│   ├── kernel.ld         # Linker script
+│   ├── main.c           # start() + loop
+│   ├── task.c            # Tasks (Shell, Ball, Desktop, Clock)
+│   ├── graphics.c/h     # Draw(), DrawRect(), Flush()
+│   ├── input.c          # Keyboard/mouse ISRs
+│   ├── graphics_elements.c # UI elements
+│   ├── font.c           # Bitmap font
+│   ├── final.c          # Combined entry
+│   └── bin/             # Build output
+├── build.sh             # Build script
+├── run.sh              # Run script
+├── makefile            # Make build
+└── os.img             # Built image
 ```
 
 ---
 
-## Architecture Notes
+## Architecture
 
-**Compilation model** — single translation unit. `final.c` `#include`s every `.c` file in a fixed order. Globals defined in earlier files are visible to later ones (e.g. `input.c` globals used in `task.c` and `main.c`).
-
-**Memory map (fixed)**
+**Memory Map**
 | Address | Purpose |
-|---|---|
-| `0x7c00` | MBR |
-| `0x1000` | Kernel loads here |
-| `0x8000` | VBEInfoBlock |
-| `0x90000` | Stack top |
-| `0xffff0` | Off-screen framebuffer (RGB565) |
+|---------|---------|
+| 0x7c00 | MBR |
+| 0x1000 | Kernel |
+| 0x8000 | VBEInfoBlock |
+| 0x90000 | Stack |
+| 0xffff0 | Framebuffer |
 
-**Color** — RGB565: `r<<11 | g<<5 | b`. Ranges: R 0–16, G 0–32, B 0–16.
+**Color** — RGB565: `r<<11 | g<<5 | b`
 
-**Task system** — `tasks[256]`, priority 0 (highest) to 5. Params via `iparams[taskId * 10 + N]`. Max ~10 tasks (100 int param slots total). No dynamic allocation.
+**Task System** — `tasks[256]`, priority 0-5. Params via `iparams[taskId * 10 + N]`.
 
 ---
 
-## Known Constraints
+## Constraints
 
-- String literals ≤ 61 chars (stack-allocated char arrays, no heap)
-- ~10 task limit from `iparams[100]`
-- No dynamic memory allocation
-- Single CPU, cooperative (no preemption)
-- VBE fixed at mode `0x111` (640×480 16bpp)
+- String literals ≤ 61 chars
+- Max ~10 tasks (100 param slots)
+- No dynamic allocation
+- Single CPU, cooperative multitasking
+- VBE fixed at 0x111 (640×480 16bpp)
+
+---
+
+## Build Tools
+
+| Tool | Purpose |
+|------|---------|
+| nasm | Assemble bootloader |
+| gcc -m32 | Compile 32-bit freestanding |
+| ld, objcopy | Link + binary |
+| qemu-system-x86_64 | Run |
+
+---
+
+## Building
+
+```bash
+# Option 1: build.sh
+./build.sh
+
+# Option 2: Make
+make
+make run
+
+# Clean
+make clean
+```
 
 ---
 
 ## Future Ideas
 
-### Near-term
-- [ ] `iparams` bump to 256 slots — lift the ~10 task limit
-- [ ] Double-buffering: only `Flush()` dirty regions instead of full screen
-- [ ] Resizable windows — pass width/height as iparams, handle drag corners
-- [ ] Basic text input widget — character buffer task with cursor blink
-- [ ] Mouse cursor: custom sprite instead of filled rect
-
-### Mid-term
-- [ ] Simple filesystem — FAT12 on the disk image to load programs
-- [ ] Flat memory allocator — fixed-size block pool (no `malloc`, but less wasteful)
-- [ ] More fonts — monospace for terminal-style apps, variable-width support
-- [ ] Window z-ordering — click to bring forward, track `mouse_possessed_task_id` properly
-- [ ] Color themes — palette abstraction over RGB565 constants
-
-### Long-term / exploratory
-- [ ] Protected mode segments for basic task isolation
-- [ ] Preemptive scheduler with PIT-driven context switch
-- [ ] ATA PIO disk driver — read sectors directly from IDE
-- [ ] VBE mode switch UI — let the user pick resolution at boot
-- [ ] Serial port output — debug logging via COM1 to QEMU stdio
-- [ ] Soundblaster 16 / PC speaker beeps for feedback
-
----
-
-## Dependencies
-
-| Tool | Purpose |
-|---|---|
-| `nasm` | Assemble MBR + kernel entry |
-| `gcc` (i686 / multilib) | Compile 32-bit freestanding C |
-| `binutils` (`ld`, `objcopy`) | Link + strip to raw binary |
-| `qemu-full` | Run the image |
+- FAT12 filesystem
+- Text input widget
+- Window resizing
+- Z-ordering
+- Sound (PC speaker)
+- ATA disk driver

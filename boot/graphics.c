@@ -113,13 +113,14 @@ void Flush() {
     if (!screen_dirty) return;
     screen_dirty = 0;
     VBEInfoBlock* VBE = (VBEInfoBlock*) VBEInfoAddress;
-    unsigned short* buffer = (unsigned short*) ScreenBufferAddress;
-    int index;
+    unsigned short* src = (unsigned short*) ScreenBufferAddress;
+    unsigned short* dst = (unsigned short*) VBE->screen_ptr;
+    int count = VBE->x_resolution * VBE->y_resolution;
 
-    for (int y = 0; y < VBE->y_resolution; y++) {
-        for (int x = 0; x < VBE->x_resolution; x++) {
-            index = y * VBE->x_resolution + x;
-            *((unsigned short*)VBE->screen_ptr + index) = *(buffer + index);
-        }
-    }
+    __asm__ volatile (
+        "rep movsw"
+        : "+S" (src), "+D" (dst), "+c" (count)
+        :
+        : "memory"
+    );
 }

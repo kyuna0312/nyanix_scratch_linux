@@ -1,5 +1,7 @@
 #include "graphics.h"
 
+int ClockTask(int taskId);
+
 int start() {
     VBEInfoBlock* VBE = (VBEInfoBlock*) VBEInfoAddress;
 
@@ -25,17 +27,13 @@ int start() {
 	tasks[TasksLength].function = &ClearScreenTask;
 	TasksLength++;
 
-	// tasks[TasksLength].priority = 0;
-	// tasks[TasksLength].taskId = TasksLength;
-	// tasks[TasksLength].function = &TestGraphicalElementsTask;
-	// iparams[TasksLength * task_params_length + 0] = 50;
-	// iparams[TasksLength * task_params_length + 1] = 50;
-	// iparams[TasksLength * task_params_length + 2] = 300;
-	// iparams[TasksLength * task_params_length + 3] = 300;
-	// iparams[TasksLength * task_params_length + 4] = 0;
-	// iparams[TasksLength * task_params_length + 5] = 0;
-	// iparams[TasksLength * task_params_length + 6] = 0;
-	// TasksLength++;
+	tasks[TasksLength].priority = 5;
+	tasks[TasksLength].function = &DesktopTask;
+	TasksLength++;
+
+	tasks[TasksLength].priority = 5;
+	tasks[TasksLength].function = &ClockTask;
+	TasksLength++;
 
 	tasks[TasksLength].priority = 0;
 	tasks[TasksLength].function = &TaskbarTask;
@@ -60,10 +58,8 @@ int start() {
 
 	// Before loop
 	int last_tick = 0;
-	int target_ticks_per_frame = 1; // at 100Hz PIT, 1 tick = ~10ms = ~100fps cap
 
 	while (1) {
-		// Wait for next tick
 		while (pit_ticks == last_tick) {
 			__asm__ volatile ("hlt");
 		}

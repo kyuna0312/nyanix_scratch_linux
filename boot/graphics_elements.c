@@ -1,3 +1,5 @@
+#include "graphics.h"
+
 int DrawCircleButton(int x, int y, int radius, int r, int g, int b, int taskId) {
     if (mouse_possessed_task_id == taskId && (((mx - x)*(mx - x) + (my - y)*(my - y)) <= radius*radius)) {
         DrawCircle(x, y, radius, r, g, b);

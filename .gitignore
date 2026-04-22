@@ -3,24 +3,15 @@ os.img
 os.img.lock
 *.o
 *.elf
-<<<<<<< Updated upstream
-=======
 CLAUDE.md
 docs/
 .vscode/
 AGENTS.md
->>>>>>> Stashed changes
 .DS_Store
 *.bak
 *_backup
 *_new
-<<<<<<< Updated upstream
-*.original
-=======
 *.original
 scripts/
 .vscode/
 .remember/
-build.sh
-run.sh
->>>>>>> Stashed changes

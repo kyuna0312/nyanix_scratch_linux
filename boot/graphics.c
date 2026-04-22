@@ -1,5 +1,7 @@
 #include "graphics.h"
 
+int screen_dirty = 0;
+
 // R - 4 bits
 // G - 5 bits
 // B - 4 bits
@@ -11,6 +13,7 @@ void Draw(int x, int y, int r, int g, int b) {
     VBEInfoBlock* VBE = (VBEInfoBlock*) VBEInfoAddress;
     unsigned short* buffer = (unsigned short*) ScreenBufferAddress;
 
+    screen_dirty = 1;
     int index = y * VBE->x_resolution + x;
     *(buffer + index) = rgb(r, g, b);
 }
@@ -107,6 +110,8 @@ void DrawCircle(int x, int y, int radius, int r, int g, int b) {
 }
 
 void Flush() {
+    if (!screen_dirty) return;
+    screen_dirty = 0;
     VBEInfoBlock* VBE = (VBEInfoBlock*) VBEInfoAddress;
     unsigned short* buffer = (unsigned short*) ScreenBufferAddress;
     int index;

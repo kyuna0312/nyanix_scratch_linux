@@ -37,6 +37,7 @@ typedef struct VBEInfoBlockStruct {
 #define VBEInfoAddress 0x8000
 #define ScreenBufferAddress 0xffff0
 
+extern int screen_dirty;
 extern const int font_arial_width;
 extern const int font_arial_height;
 extern volatile int pit_ticks;

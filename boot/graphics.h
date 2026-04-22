@@ -39,7 +39,7 @@ typedef struct VBEInfoBlockStruct {
 
 extern const int font_arial_width;
 extern const int font_arial_height;
-extern int pit_ticks;
+extern volatile int pit_ticks;
 
 int getArialCharacter(int index, int y);
 int rgb(int r, int g, int b);

@@ -58,9 +58,18 @@ int start() {
 	// TasksLength++;
 
 
-	while(1) {
-		ProcessTasks();
+	// Before loop
+	int last_tick = 0;
+	int target_ticks_per_frame = 1; // at 100Hz PIT, 1 tick = ~10ms = ~100fps cap
 
+	while (1) {
+		// Wait for next tick
+		while (pit_ticks == last_tick) {
+			__asm__ volatile ("hlt");
+		}
+		last_tick = pit_ticks;
+
+		ProcessTasks();
 		Flush();
 	}
 }

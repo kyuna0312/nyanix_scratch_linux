@@ -13,10 +13,12 @@ int start() {
 	char* characterBufferPointer = characterBuffer;
 	int characterBufferLength = 0;
 
+	base0 = (unsigned int) &isr0;
 	base = (unsigned int) &isr1;
 	base12 = (unsigned int) &isr12;
 
 	InitialiseMouse();
+	InitPIT();
 	InitialiseIDT();
 
 	tasks[TasksLength].priority = 0;

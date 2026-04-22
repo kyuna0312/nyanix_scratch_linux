@@ -4,6 +4,7 @@
 int mx, my;
 int left_clicked, right_clicked, middle_clicked;
 int current_byte = 0;
+int pit_ticks = 0;
 uint8_t bytes[4] = { 0 };
 int mouse_speed = 7;
 int mouse_possessed_task_id = 0;
@@ -34,9 +35,11 @@ int Scancode = -1;
 
 void InitialiseIDT();
 extern void LoadIDT();
+void HandleISR0();
 void HandleISR1();
 void HandleISR12();
 void RemapPIC();
+void InitPIT();
 
 struct IDTElement {
     unsigned short lower;
@@ -47,8 +50,8 @@ struct IDTElement {
 };
 
 struct IDTElement _idt[256];
-extern unsigned int isr1, isr12;
-unsigned int base, base12;
+extern unsigned int isr0, isr1, isr12;
+unsigned int base, base0, base12;
 
 unsigned char inportb(unsigned short port) {
     unsigned char value;
@@ -63,6 +66,12 @@ void outportb(unsigned short port, unsigned char data) {
 }
 
 void InitialiseIDT() {
+    _idt[0].lower = (base0 & 0xffff);
+    _idt[0].higher = (base0 >> 16) & 0xffff;
+    _idt[0].selector = 0x08;
+    _idt[0].zero = 0;
+    _idt[0].flags = 0x8e;
+
     _idt[1].lower = (base & 0xffff);
     _idt[1].higher = (base >> 16) & 0xffff;
     _idt[1].selector = 0x08;
@@ -103,6 +112,27 @@ void RemapPIC() {
 
     outportb(pic1_data, a);
     outportb(pic2_data, b);
+}
+
+void HandleISR0() {
+    pit_ticks++;
+    __asm__ volatile ("outb %0, %1" : : "a"((unsigned char)0x20), "Nd"((unsigned short)0x20));
+}
+
+void InitPIT() {
+    unsigned short divisor = 11931;
+    __asm__ volatile (
+        "outb %0, %1\n"
+        : : "a"((unsigned char)0x36), "Nd"((unsigned short)0x43)
+    );
+    __asm__ volatile (
+        "outb %0, %1\n"
+        : : "a"((unsigned char)(divisor & 0xFF)), "Nd"((unsigned short)0x40)
+    );
+    __asm__ volatile (
+        "outb %0, %1\n"
+        : : "a"((unsigned char)((divisor >> 8) & 0xFF)), "Nd"((unsigned short)0x40)
+    );
 }
 
 void HandleISR1() {

@@ -16,14 +16,16 @@ $(BIN)/kernel_entry.o: boot/kernel_entry.asm | $(BIN)
 
 $(BIN)/kernel.o: boot/final.c boot/*.c boot/*.h | $(BIN)
 	gcc -m32 -ffreestanding -fno-stack-protector -nostdlib \
+	    -fno-pic -fno-pie -fno-asynchronous-unwind-tables \
 	    -I boot -c boot/final.c -o $(BIN)/kernel.o
 
-$(BIN)/kernel.elf: $(BIN)/kernel_entry.o $(BIN)/kernel.o
-	ld -m elf_i386 -o $(BIN)/kernel.elf -Ttext 0x1000 \
+$(BIN)/kernel.elf: $(BIN)/kernel_entry.o $(BIN)/kernel.o boot/kernel.ld
+	ld -m elf_i386 -T boot/kernel.ld \
+	    -o $(BIN)/kernel.elf \
 	    $(BIN)/kernel_entry.o $(BIN)/kernel.o
 
 $(BIN)/kernel.bin: $(BIN)/kernel.elf
-	objcopy -O binary -j .text $(BIN)/kernel.elf $(BIN)/kernel.bin
+	objcopy -O binary $(BIN)/kernel.elf $(BIN)/kernel.bin
 
 run: all
 	qemu-system-x86_64 -drive format=raw,file=os.img -m 32M -vga std -no-reboot

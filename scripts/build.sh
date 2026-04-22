@@ -16,16 +16,17 @@ nasm "$ROOT/boot/kernel_entry.asm" -f elf -o "$BIN/kernel_entry.o"
 
 echo "[build] Compiling kernel (32-bit freestanding)..."
 gcc -m32 -ffreestanding -fno-stack-protector -nostdlib \
+    -fno-pic -fno-pie -fno-asynchronous-unwind-tables \
     -I"$ROOT/boot" \
     -c "$ROOT/boot/final.c" -o "$BIN/kernel.o"
 
 echo "[build] Linking kernel..."
-ld -m elf_i386 -o "$BIN/kernel.elf" \
-    -Ttext 0x1000 \
+ld -m elf_i386 -T "$ROOT/boot/kernel.ld" \
+    -o "$BIN/kernel.elf" \
     "$BIN/kernel_entry.o" "$BIN/kernel.o"
 
 echo "[build] Stripping to raw binary..."
-objcopy -O binary -j .text "$BIN/kernel.elf" "$BIN/kernel.bin"
+objcopy -O binary "$BIN/kernel.elf" "$BIN/kernel.bin"
 
 echo "[build] Assembling final image..."
 cat "$BIN/boot.bin" "$BIN/kernel.bin" > "$ROOT/os.img"

@@ -60,19 +60,19 @@ gdt_null_descriptor:
     dd 0x00
     dd 0x00
 gdt_code_seg:
-    dw 0xeeee
-    dw 0x00
-    db 0x00
-    db 10011010b
-    db 11001111b
-    db 0x00
+    dw 0xffff   ; limit[15:0] = 0xffff
+    dw 0x0000   ; base[15:0]  = 0
+    db 0x00     ; base[23:16] = 0
+    db 10011010b ; access: present, ring0, code, executable, readable
+    db 11001111b ; flags: 4KB gran, 32-bit, limit[19:16]=0xf
+    db 0x00     ; base[31:24] = 0
 gdt_data_seg:
-    dw 0xeeee
-    dw 0x00
-    db 0x00
-    db 10010010b
-    db 11001111b
-    db 0x00
+    dw 0xffff   ; limit[15:0] = 0xffff
+    dw 0x0000   ; base[15:0]  = 0
+    db 0x00     ; base[23:16] = 0
+    db 10010010b ; access: present, ring0, data, writable
+    db 11001111b ; flags: 4KB gran, 32-bit, limit[19:16]=0xf
+    db 0x00     ; base[31:24] = 0
 gdt_end:
 gdt_descriptor:
     dw gdt_end - gdt_begin - 1

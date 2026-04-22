@@ -5,3 +5,4 @@ os.img.lock
 *.elf
 CLAUDE.md
 docs/
+.vscode/

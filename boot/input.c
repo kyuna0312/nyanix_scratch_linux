@@ -291,7 +291,7 @@ unsigned char ProcessScancode(int scancode) {
         
     else if (scancode ==  0x04)
         if (shift_pressed == TRUE)
-            return '£';
+            return '#';
         else 
             return '3';
         
@@ -509,7 +509,7 @@ unsigned char ProcessScancode(int scancode) {
         
     else if (scancode == 0x29)
         if (shift_pressed == TRUE)
-            return '¬';
+            return '~';
         else 
             return '`';
         

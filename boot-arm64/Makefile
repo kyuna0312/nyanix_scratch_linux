@@ -4,26 +4,23 @@ CC = aarch64-linux-gnu-gcc
 OBJCOPY = aarch64-linux-gnu-objcopy
 
 CFLAGS = -Os -Wall -nostdinc -ffreestanding -fno-pie -mgeneral-regs-only -static
-LDFLAGS = -nostdlib -static -T kernel.ld
 
-SRC = main.c boot.S
+KERNEL_SRC = kernel/main.c kernel/boot.S
+KERNEL_BIN = bin/kernel.elf bin/kernel.bin bin/kernel8.img
 
-all: kernel.elf kernel.bin kernel8.img
+all: $(KERNEL_BIN)
 
-kernel.elf: $(SRC) kernel.ld
-	$(CC) $(CFLAGS) $(LDFLAGS) -o kernel.elf $(SRC)
+bin/kernel.elf: $(KERNEL_SRC) kernel/kernel.ld
+	$(CC) $(CFLAGS) -nostdlib -T kernel/kernel.ld -o $@ $(KERNEL_SRC)
 
-kernel.bin: kernel.elf
-	$(OBJCOPY) -O binary kernel.elf kernel.bin
+bin/kernel.bin: bin/kernel.elf
+	$(OBJCOPY) -O binary $< $@
 
-kernel8.img: kernel.bin
-	cp kernel.bin kernel8.img
+bin/kernel8.img: bin/kernel.bin
+	cp $< $@
 
-run: kernel.elf
-	qemu-system-aarch64 -M virt -m 256 -cpu cortex-a57 \
-	  -kernel kernel.elf \
-	  -serial mon:stdio \
-	  -nographic
+run: bin/kernel.elf
+	qemu-system-aarch64 -M virt -m 256 -cpu cortex-a57 -kernel $< -nographic
 
 clean:
-	rm -f kernel.elf kernel.bin kernel8.img
+	rm -f bin/*.elf bin/*.bin bin/*.img

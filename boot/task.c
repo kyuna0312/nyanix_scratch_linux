@@ -1,15 +1,10 @@
 #include "graphics.h"
 
-<<<<<<< Updated upstream
 int DesktopTask(int taskId);
 int ClockTask(int taskId);
-
-int TasksLength = 0;
-=======
 int DemoTask(int taskId);
 
 int TasksLength = 0;
->>>>>>> Stashed changes
 
 struct Task tasks[256];
 int iparams[100] = {10};

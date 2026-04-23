@@ -1,123 +1,62 @@
-# Nyanix — SaphireOS
+# Nyanix — Bare-Metal OS
 
-Bare-metal x86 OS built from scratch. Boots from MBR, runs VBE 640×480 16bpp (RGB565), with cooperative multitasking and PS/2 mouse/keyboard input. No libc.
+Multi-architecture bare-metal OS: x86, x86_64, ARM64.
 
----
+## Build & Run
+
+```bash
+make      # Build all
+make run       # Run x86_64
+make run-arm64 # Run ARM64
+```
+
+## Variants
+
+| Arch | Path | Display |
+|------|------|---------|
+| x86 (32-bit) | `boot/` | VBE 640×480 16bpp |
+| x86_64 | `boot-x64/` | VGA text + UART |
+| ARM64 | `boot-arm64/` | UART |
 
 ## Quick Start
 
 ```bash
-# Build
-./build.sh
+# x86_64
+make run
 
-# Run in QEMU
-./run.sh
+# ARM64 (QEMU virt)
+make run-arm64
 ```
-
----
-
-## Features
-
-| Feature | Status |
-|---------|---------|
-| MBR bootloader | ✅ |
-| VBE 640×480 16bpp | ✅ |
-| Off-screen buffer + Flush() | ✅ |
-| Custom bitmap font renderer | ✅ |
-| PS/2 keyboard (IDT IRQ1) | ✅ |
-| PS/2 mouse (IDT IRQ12) | ✅ |
-| Cooperative task scheduler | ✅ |
-| PIT at ~100 Hz | ✅ |
-| Draggable windows | ✅ |
-| Buttons (hover/click) | ✅ |
-| Taskbar with clock | ✅ |
-| Desktop background | ✅ |
-
----
 
 ## Project Structure
 
 ```
-nyanix_scratch_linux/
-├── boot/
-│   ├── boot.asm           # MBR bootloader
-│   ├── kernel_entry.asm  # 32-bit entry point
-│   ├── kernel.ld         # Linker script
-│   ├── main.c           # start() + loop
-│   ├── task.c            # Tasks (Shell, Ball, Desktop, Clock)
-│   ├── graphics.c/h     # Draw(), DrawRect(), Flush()
-│   ├── input.c          # Keyboard/mouse ISRs
-│   ├── graphics_elements.c # UI elements
-│   ├── font.c           # Bitmap font
-│   ├── final.c          # Combined entry
-│   └── bin/             # Build output
-├── build.sh             # Build script
-├── run.sh              # Run script
-├── makefile            # Make build
-└── os.img             # Built image
+nyanix/
+├── boot/          # 32-bit x86 (VBE graphics)
+├── boot-x64/      # x86_64 bare-metal
+├── boot-arm64/     # ARM64 bare-metal
+├── Makefile       # Unified build
+└── os.img       # 32-bit disk image
 ```
 
----
+## Features (x86 32-bit)
 
-## Architecture
+- MBR bootloader + VBE graphics
+- Cooperative multitasking (256 tasks, priority 0-5)
+- PS/2 keyboard/mouse with IDT
+- Draggable windows, buttons, taskbar
+- Custom bitmap font renderer
 
-**Memory Map**
+## Memory Map (32-bit)
+
 | Address | Purpose |
 |---------|---------|
 | 0x7c00 | MBR |
 | 0x1000 | Kernel |
 | 0x8000 | VBEInfoBlock |
-| 0x90000 | Stack |
 | 0xffff0 | Framebuffer |
 
-**Color** — RGB565: `r<<11 | g<<5 | b`
+## Requirements
 
-**Task System** — `tasks[256]`, priority 0-5. Params via `iparams[taskId * 10 + N]`.
-
----
-
-## Constraints
-
-- String literals ≤ 61 chars
-- Max ~10 tasks (100 param slots)
-- No dynamic allocation
-- Single CPU, cooperative multitasking
-- VBE fixed at 0x111 (640×480 16bpp)
-
----
-
-## Build Tools
-
-| Tool | Purpose |
-|------|---------|
-| nasm | Assemble bootloader |
-| gcc -m32 | Compile 32-bit freestanding |
-| ld, objcopy | Link + binary |
-| qemu-system-x86_64 | Run |
-
----
-
-## Building
-
-```bash
-# Option 1: build.sh
-./build.sh
-
-# Option 2: Make
-make
-make run
-
-# Clean
-make clean
-```
-
----
-
-## Future Ideas
-
-- FAT12 filesystem
-- Text input widget
-- Window resizing
-- Z-ordering
-- Sound (PC speaker)
-- ATA disk driver
+- nasm, gcc (32-bit + 64-bit cross-compilers)
+- qemu-system-x86_64, qemu-system-aarch64
